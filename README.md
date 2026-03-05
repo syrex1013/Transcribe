@@ -41,6 +41,8 @@ Transcribe:
 transcribe recording.mp3 en
 ```
 
+Full install details and troubleshooting: [INSTALLATION.md](INSTALLATION.md)
+
 ## Usage
 
 ```bash
@@ -95,6 +97,7 @@ Use `.env.example` as reference.
 |- transcribe              # CLI entrypoint
 |- transcribe_groq.py      # Core transcription + diarization pipeline
 |- install.sh              # Installer for dependencies and shell setup
+|- INSTALLATION.md         # Detailed install and PATH guide
 |- .env.example            # Environment variable template
 |- CHANGELOG.md
 |- RELEASE_CHECKLIST.md
@@ -111,6 +114,16 @@ Initial release artifacts are prepared:
 - `LICENSE` (MIT)
 - `CHANGELOG.md`
 - `RELEASE_CHECKLIST.md`
+
+## Installation guide
+
+The installer is designed to:
+
+- Install required dependencies: `ffmpeg`, `ffprobe`, Python packages from `requirements.txt`
+- Install `transcribe` globally in `/usr/local/bin` when possible
+- Fallback to user-local install in `~/.local/bin` when system install is unavailable
+- Update shell profile so `transcribe` is available everywhere
+- Persist token config in `~/.config/transcribe/config`
 
 ## License
 

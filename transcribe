@@ -1,6 +1,30 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+find_groq_script() {
+  if [ -n "${TRANSCRIBE_GROQ_SCRIPT:-}" ] && [ -f "${TRANSCRIBE_GROQ_SCRIPT}" ]; then
+    echo "$TRANSCRIBE_GROQ_SCRIPT"
+    return 0
+  fi
+
+  local candidates=(
+    "/usr/local/lib/transcribe_groq.py"
+    "$HOME/.local/lib/transcribe-ai/transcribe_groq.py"
+    "$SCRIPT_DIR/transcribe_groq.py"
+  )
+
+  for script in "${candidates[@]}"; do
+    if [ -f "$script" ]; then
+      echo "$script"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 find_whisper_model() {
   if [ -n "${WHISPER_MODEL_PATH:-}" ] && [ -f "${WHISPER_MODEL_PATH}" ]; then
     echo "$WHISPER_MODEL_PATH"
@@ -98,5 +122,22 @@ else
     echo "  export GROQ_API_KEY=\"your_key_here\""
     exit 1
   fi
-  python3 /usr/local/lib/transcribe_groq.py "$FILE" "$LANG" --output "$OUTPUT" $EXTRA_ARGS
+
+  PYTHON_BIN="$(command -v python3 || true)"
+  if [ -z "$PYTHON_BIN" ]; then
+    echo "Error: python3 not found in PATH."
+    exit 1
+  fi
+
+  GROQ_SCRIPT="$(find_groq_script || true)"
+  if [ -z "$GROQ_SCRIPT" ]; then
+    echo "Error: transcribe_groq.py not found."
+    echo "Expected one of:"
+    echo "  /usr/local/lib/transcribe_groq.py"
+    echo "  $HOME/.local/lib/transcribe-ai/transcribe_groq.py"
+    echo "Or set TRANSCRIBE_GROQ_SCRIPT to a valid path."
+    exit 1
+  fi
+
+  "$PYTHON_BIN" "$GROQ_SCRIPT" "$FILE" "$LANG" --output "$OUTPUT" $EXTRA_ARGS
 fi
