@@ -36,7 +36,18 @@ except ImportError:
 console = Console()
 
 REQUIRED_PACKAGES = ["requests", "pyannote.audio", "torch", "torchaudio"]
-CONFIG_FILE        = os.path.expanduser("~/.config/transcribe/config")
+# Windows: respect TRANSCRIBE_CONFIG env var or use APPDATA; Unix: ~/.config/transcribe/config
+if os.name == "nt":
+    _cfg_base = os.environ.get("APPDATA", os.path.expanduser("~"))
+    CONFIG_FILE = os.environ.get(
+        "TRANSCRIBE_CONFIG",
+        os.path.join(_cfg_base, "transcribe", "config"),
+    )
+else:
+    CONFIG_FILE = os.environ.get(
+        "TRANSCRIBE_CONFIG",
+        os.path.expanduser("~/.config/transcribe/config"),
+    )
 GROQ_API_URL       = "https://api.groq.com/openai/v1/audio/transcriptions"
 MAX_BYTES          = 24 * 1024 * 1024
 CHUNK_MINUTES      = 9
@@ -107,7 +118,10 @@ def save_config(key, value):
         lines.append(f'{key}="{value}"\n')
     with open(CONFIG_FILE, "w") as f:
         f.writelines(lines)
-    os.chmod(CONFIG_FILE, 0o600)
+    try:
+        os.chmod(CONFIG_FILE, 0o600)
+    except (AttributeError, NotImplementedError):
+        pass  # Windows: chmod not meaningful
 
 
 def prompt_token(env_var, description, url):
