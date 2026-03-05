@@ -29,8 +29,8 @@ Built for fast hackathon delivery: simple install, practical output, and clear t
 ## Quick start
 
 ```bash
-git clone https://github.com/your-org/transcribe-ai.git
-cd transcribe-ai
+git clone https://github.com/syrex1013/Transcribe.git
+cd Transcribe
 chmod +x install.sh transcribe
 ./install.sh
 ```
