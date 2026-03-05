@@ -1,0 +1,58 @@
+# macOS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+build/
+dist/
+*.egg-info/
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+*.orig
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated transcripts and artifacts
+*_transcribed.txt
+transcripts/
+output/
+
+# Large local media inputs
+audio/
+recordings/
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.flac
+*.aac
+*.mp4
+*.mov

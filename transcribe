@@ -1,0 +1,102 @@
+#!/bin/bash
+set -e
+
+find_whisper_model() {
+  if [ -n "${WHISPER_MODEL_PATH:-}" ] && [ -f "${WHISPER_MODEL_PATH}" ]; then
+    echo "$WHISPER_MODEL_PATH"
+    return 0
+  fi
+
+  local candidates=(
+    "$HOME/Downloads/whisper.cpp/models/ggml-large-v3.bin"
+    "$HOME/whisper.cpp/models/ggml-large-v3.bin"
+    "/usr/local/share/whisper.cpp/ggml-large-v3.bin"
+  )
+
+  for model in "${candidates[@]}"; do
+    if [ -f "$model" ]; then
+      echo "$model"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+usage() {
+  echo "Usage: transcribe <file> <language> [options]"
+  echo ""
+  echo "Options:"
+  echo "  --no-diarize       Skip speaker detection"
+  echo "  --speakers N       Override auto-detected speaker count"
+  echo "  --local            Use local whisper.cpp instead of Groq"
+  echo ""
+  echo "Examples:"
+  echo "  transcribe recording.mp3 pl"
+  echo "  transcribe recording.mp3 pl --speakers 3"
+  echo "  transcribe recording.mp3 pl --no-diarize"
+  echo ""
+  echo "Speaker diarization setup (one-time):"
+  echo "  pip install pyannote.audio torch torchaudio"
+  echo "  export HF_TOKEN=hf_xxx   # free at huggingface.co"
+  echo "  # Accept terms: huggingface.co/pyannote/speaker-diarization-3.1"
+  exit 1
+}
+
+if [ $# -lt 2 ]; then usage; fi
+
+FILE="$1"
+LANG="$2"
+shift 2
+
+if [ ! -f "$FILE" ]; then
+  echo "Error: File '$FILE' not found"
+  exit 1
+fi
+
+DIRNAME="$(dirname "$FILE")"
+BASENAME="$(basename "$FILE")"
+NAME="${BASENAME%.*}"
+OUTPUT="$DIRNAME/${NAME}_transcribed.txt"
+
+LOCAL=0
+EXTRA_ARGS=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --local)       LOCAL=1; shift ;;
+    --no-diarize)  EXTRA_ARGS="$EXTRA_ARGS --no-diarize"; shift ;;
+    --speakers)    EXTRA_ARGS="$EXTRA_ARGS --speakers $2"; shift 2 ;;
+    *)             shift ;;
+  esac
+done
+
+if [ "$LOCAL" -eq 1 ]; then
+  if ! command -v whisper >/dev/null 2>&1; then
+    echo "Error: whisper binary not found in PATH."
+    echo "Install whisper.cpp and ensure 'whisper' is available."
+    exit 1
+  fi
+
+  MODEL_PATH="$(find_whisper_model || true)"
+  if [ -z "$MODEL_PATH" ]; then
+    echo "Error: whisper model file not found."
+    echo "Set WHISPER_MODEL_PATH to your ggml model, for example:"
+    echo "  export WHISPER_MODEL_PATH=\"$HOME/whisper.cpp/models/ggml-large-v3.bin\""
+    exit 1
+  fi
+
+  echo "Using local whisper.cpp..."
+  OF="$DIRNAME/${NAME}_transcribed"
+  whisper -m "$MODEL_PATH" \
+    -t 8 -l "$LANG" -otxt -of "$OF" "$FILE"
+  echo "Done → ${OF}.txt"
+else
+  if [ -z "${GROQ_API_KEY:-}" ]; then
+    echo "Error: GROQ_API_KEY is not set."
+    echo "Get a free key at https://console.groq.com then:"
+    echo "  export GROQ_API_KEY=\"your_key_here\""
+    exit 1
+  fi
+  python3 /usr/local/lib/transcribe_groq.py "$FILE" "$LANG" --output "$OUTPUT" $EXTRA_ARGS
+fi
