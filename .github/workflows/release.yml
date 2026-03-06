@@ -108,8 +108,8 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $out = & "dist\${{ matrix.asset }}" --help 2>&1
-          if ($out -notmatch "usage") { throw "Binary smoke test failed" }
+          $out = & "dist\${{ matrix.asset }}" --help 2>&1 | Out-String
+          if ($out -notmatch "usage") { throw "Binary smoke test failed: output was:`n$out" }
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
@@ -118,31 +118,7 @@ jobs:
           path: dist/${{ matrix.asset }}
           if-no-files-found: error
 
-  # ── 2. Publish to PyPI (trusted OIDC, no token needed) ─────────────────────
-  publish-pypi:
-    name: Publish · PyPI
-    needs: meta
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - name: Build sdist + wheel
-        run: |
-          pip install build
-          python -m build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-  # ── 3. Build & publish Debian package to GitHub Pages APT repo ────────────
+  # ── 2. Build & publish Debian package to GitHub Pages APT repo ────────────
   publish-apt:
     name: Publish · APT
     needs: meta
@@ -172,7 +148,7 @@ jobs:
           destination_dir: apt
           keep_files: true
 
-  # ── 4. Create GitHub Release and attach binaries ───────────────────────────
+  # ── 3. Create GitHub Release and attach binaries ───────────────────────────
   create-release:
     name: Create GitHub Release
     needs: [meta, build-binary]
@@ -201,7 +177,7 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
 
-  # ── 5. Update Homebrew formula in-repo ─────────────────────────────────────
+  # ── 4. Update Homebrew formula in-repo ─────────────────────────────────────
   update-brew:
     name: Update · Homebrew formula
     needs: [meta, create-release]
@@ -249,7 +225,7 @@ jobs:
             git push
           fi
 
-  # ── 6. Publish npm package ─────────────────────────────────────────────────
+  # ── 5. Publish npm package ─────────────────────────────────────────────────
   publish-npm:
     name: Publish · npm
     needs: [meta, create-release]
