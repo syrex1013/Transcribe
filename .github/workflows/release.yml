@@ -1,0 +1,273 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v0.4.0)"
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Extract the version once so every job can reference it cleanly.
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ── 0. Resolve version ──────────────────────────────────────────────────────
+  meta:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - name: Extract version
+        id: v
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=${TAG}"                      >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}"                >> "$GITHUB_OUTPUT"
+
+  # ── 1. Build standalone binaries with PyInstaller ──────────────────────────
+  build-binary:
+    name: Build · ${{ matrix.label }}
+    needs: meta
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            label: linux-x64
+            asset: transcribe-linux-x64
+          - os: macos-13          # Intel runner
+            label: darwin-x64
+            asset: transcribe-darwin-x64
+          - os: macos-latest      # Apple Silicon runner
+            label: darwin-arm64
+            asset: transcribe-darwin-arm64
+          - os: windows-latest
+            label: windows-x64
+            asset: transcribe-windows-x64.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install build dependencies
+        run: pip install pyinstaller requests rich
+
+      - name: Build binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          pyinstaller \
+            --onefile \
+            --name transcribe \
+            --hidden-import requests \
+            --hidden-import rich \
+            --collect-all rich \
+            transcribe_groq.py
+          mv dist/transcribe "dist/${{ matrix.asset }}"
+          chmod +x "dist/${{ matrix.asset }}"
+
+      - name: Build binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          pyinstaller `
+            --onefile `
+            --name transcribe `
+            --hidden-import requests `
+            --hidden-import rich `
+            --collect-all rich `
+            transcribe_groq.py
+          Move-Item dist\transcribe.exe "dist\${{ matrix.asset }}"
+
+      - name: Smoke-test binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          "dist/${{ matrix.asset }}" --help 2>&1 | grep -i usage
+
+      - name: Smoke-test binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $out = & "dist\${{ matrix.asset }}" --help 2>&1
+          if ($out -notmatch "usage") { throw "Binary smoke test failed" }
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.label }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+
+  # ── 2. Publish to PyPI (trusted OIDC, no token needed) ─────────────────────
+  publish-pypi:
+    name: Publish · PyPI
+    needs: meta
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Build sdist + wheel
+        run: |
+          pip install build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  # ── 3. Build & publish Debian package to GitHub Pages APT repo ────────────
+  publish-apt:
+    name: Publish · APT
+    needs: meta
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Debian packaging tools
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y dpkg-dev
+
+      - name: Build .deb package
+        run: bash scripts/build_deb.sh
+
+      - name: Build APT repo metadata
+        run: bash scripts/build_apt_repo.sh dist/deb dist/apt
+
+      - name: Publish to gh-pages (apt/)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: dist/apt
+          destination_dir: apt
+          keep_files: true
+
+  # ── 4. Create GitHub Release and attach binaries ───────────────────────────
+  create-release:
+    name: Create GitHub Release
+    needs: [meta, build-binary]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Show release assets
+        run: ls -lh release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          name: "transcribe-all ${{ needs.meta.outputs.tag }}"
+          files: release-assets/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+
+  # ── 5. Update Homebrew formula in-repo ─────────────────────────────────────
+  update-brew:
+    name: Update · Homebrew formula
+    needs: [meta, create-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tarball SHA256
+        id: sha
+        run: |
+          VERSION="${{ needs.meta.outputs.version }}"
+          TAG="${{ needs.meta.outputs.tag }}"
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz"
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          SHA=$(curl -fsSL "${URL}" | sha256sum | awk '{print $1}')
+          echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Patch formula
+        run: |
+          VERSION="${{ steps.sha.outputs.version }}"
+          URL="${{ steps.sha.outputs.url }}"
+          SHA="${{ steps.sha.outputs.sha256 }}"
+          sed -i \
+            -e "s|url \"[^\"]*\"|url \"${URL}\"|" \
+            -e "s|sha256 [^$]*$|sha256 \"${SHA}\"|" \
+            -e "s|version \"[^\"]*\"|version \"${VERSION}\"|" \
+            Formula/transcribe-all.rb
+          echo "Updated formula:"
+          grep -E 'url|sha256|version' Formula/transcribe-all.rb | head -6
+
+      - name: Commit updated formula
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/transcribe-all.rb
+          if git diff --staged --quiet; then
+            echo "Formula unchanged, nothing to commit."
+          else
+            git commit -m "chore(brew): bump formula to ${{ needs.meta.outputs.tag }}"
+            git push
+          fi
+
+  # ── 6. Publish npm package ─────────────────────────────────────────────────
+  publish-npm:
+    name: Publish · npm
+    needs: [meta, create-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Set package version from tag
+        run: |
+          cd npm
+          npm version "${{ needs.meta.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Publish to npm
+        run: cd npm && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

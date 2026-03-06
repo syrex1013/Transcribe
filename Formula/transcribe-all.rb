@@ -3,8 +3,8 @@ class TranscribeAll < Formula
 
   desc "CLI audio transcription via Groq Whisper with optional speaker diarization"
   homepage "https://github.com/syrex1013/Transcribe"
-  url "https://codeload.github.com/syrex1013/Transcribe/tar.gz/refs/heads/main"
-  version "main"
+  url "https://github.com/syrex1013/Transcribe/archive/refs/tags/v0.3.0.tar.gz"
+  version "0.3.0"
   sha256 :no_check
   license "MIT"
 

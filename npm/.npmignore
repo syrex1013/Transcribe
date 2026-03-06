@@ -1,0 +1,4 @@
+# Exclude downloaded binary from npm publish
+# (it's downloaded during postinstall per-platform)
+bin/transcribe
+bin/transcribe.exe

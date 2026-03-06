@@ -1,0 +1,27 @@
+{
+  "name": "transcribe-all",
+  "version": "0.3.0",
+  "description": "CLI audio transcription via Groq Whisper with optional speaker diarization",
+  "keywords": ["transcription", "whisper", "groq", "audio", "cli", "diarization"],
+  "homepage": "https://github.com/syrex1013/Transcribe",
+  "bugs": "https://github.com/syrex1013/Transcribe/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syrex1013/Transcribe.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "bin": {
+    "transcribe": "bin/transcribe.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "README.md"
+  ]
+}

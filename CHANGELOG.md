@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-03-06
+
+### Added
+- **Unified release workflow** (`release.yml`): single tag push triggers all publish jobs.
+- **PyInstaller binary builds**: standalone `transcribe` executables for Linux x86-64,
+  macOS Intel, macOS Apple Silicon, and Windows x86-64 — no Python required.
+- **GitHub Releases**: binaries automatically attached to every `v*` release.
+- **npm package** (`npm/transcribe-all`): wraps native binaries; `npm install -g transcribe-all`
+  downloads the correct binary for the host platform during postinstall.
+- **Homebrew auto-update**: `publish-brew.yml` patches `Formula/transcribe-all.rb`
+  URL and SHA256 after each release and commits back to the repo.
+- **Standalone `publish-brew.yml`** and **`publish-npm.yml`** workflows for manual dispatch.
+- `workflow_dispatch:` trigger added to `ci.yml` for on-demand test runs.
+
+### Changed
+- Homebrew formula URL updated from `main` branch tarball to tag-based tarball for
+  reproducible, versioned installs.
+- README updated with npm install instructions, pre-built binary download table,
+  release pipeline summary, and additional badges (Release CI, PyPI version, npm version).
+
 ## [0.3.0] - 2026-03-06
 
 ### Added

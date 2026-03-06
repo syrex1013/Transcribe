@@ -1,0 +1,58 @@
+name: Publish · Homebrew Formula
+
+# Standalone manual trigger for updating the Homebrew formula
+# (also called automatically from release.yml on version tags)
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to target (e.g. v0.4.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-brew:
+    name: Update Homebrew formula
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tarball SHA256
+        id: sha
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          VERSION="${TAG#v}"
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz"
+          echo "url=${URL}"         >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          SHA=$(curl -fsSL "${URL}" | sha256sum | awk '{print $1}')
+          echo "sha256=${SHA}"      >> "$GITHUB_OUTPUT"
+
+      - name: Patch formula
+        run: |
+          VERSION="${{ steps.sha.outputs.version }}"
+          URL="${{ steps.sha.outputs.url }}"
+          SHA="${{ steps.sha.outputs.sha256 }}"
+          sed -i \
+            -e "s|url \"[^\"]*\"|url \"${URL}\"|" \
+            -e "s|sha256 [^$]*$|sha256 \"${SHA}\"|" \
+            -e "s|version \"[^\"]*\"|version \"${VERSION}\"|" \
+            Formula/transcribe-all.rb
+          echo "Updated formula:"
+          grep -E 'url|sha256|version' Formula/transcribe-all.rb | head -6
+
+      - name: Commit updated formula
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/transcribe-all.rb
+          if git diff --staged --quiet; then
+            echo "Formula unchanged, nothing to commit."
+          else
+            git commit -m "chore(brew): bump formula to ${{ github.event.inputs.tag }}"
+            git push
+          fi

@@ -9,6 +9,15 @@
   <img alt="Groq" src="https://img.shields.io/badge/Groq-Whisper%20v3-111827?style=for-the-badge">
   <img alt="pyannote" src="https://img.shields.io/badge/pyannote-Diarization-0f766e?style=for-the-badge">
   <img alt="License" src="https://img.shields.io/badge/License-MIT-166534?style=for-the-badge">
+  <a href="https://github.com/syrex1013/Transcribe/actions/workflows/release.yml">
+    <img alt="Release" src="https://img.shields.io/github/actions/workflow/status/syrex1013/Transcribe/release.yml?style=for-the-badge&label=Release&logo=github">
+  </a>
+  <a href="https://pypi.org/project/transcribe-all/">
+    <img alt="PyPI" src="https://img.shields.io/pypi/v/transcribe-all?style=for-the-badge&logo=pypi&logoColor=white&color=006dad">
+  </a>
+  <a href="https://www.npmjs.com/package/transcribe-all">
+    <img alt="npm" src="https://img.shields.io/npm/v/transcribe-all?style=for-the-badge&logo=npm&color=cb3837">
+  </a>
 </p>
 
 Cloud-first transcription CLI with optional speaker diarization.
@@ -41,24 +50,37 @@ Transcribe:
 transcribe recording.mp3 en
 ```
 
-## Package manager installs
+## Easy install (copy/paste)
 
-### Homebrew
+### Compatibility
+
+| OS | Compatible |
+|---|---|
+| macOS | ✅ |
+| Ubuntu/Debian | ✅ |
+| Other Linux distros | ✅ |
+| Windows | ✅ |
+| WSL (Ubuntu/Debian) | ✅ |
+
+### Install options
+
+#### Homebrew (macOS / Linux)
 
 ```bash
 brew tap syrex1013/transcribe-all https://github.com/syrex1013/Transcribe
 brew install transcribe-all
 ```
 
-### APT (`apt-get`)
+#### apt-get (Debian / Ubuntu)
 
 ```bash
-echo "deb [trusted=yes] https://hacklabjournal.me/Transcribe/apt ./" | sudo tee /etc/apt/sources.list.d/transcribe-all.list
+echo "deb [trusted=yes] https://syrex1013.github.io/Transcribe/apt ./" \
+  | sudo tee /etc/apt/sources.list.d/transcribe-all.list
 sudo apt-get update
 sudo apt-get install -y transcribe-all
 ```
 
-### pip
+#### pip (all platforms)
 
 ```bash
 pip install transcribe-all
@@ -68,6 +90,40 @@ Optional diarization extras:
 
 ```bash
 pip install "transcribe-all[diarize]"
+```
+
+#### npm (all platforms — no Python required)
+
+```bash
+npm install -g transcribe-all
+```
+
+The npm package downloads the correct pre-built native binary for your OS/arch
+during installation. No Python or pip needed.
+
+#### Pre-built binaries (manual download)
+
+Grab the right binary for your platform from the
+[latest GitHub Release](https://github.com/syrex1013/Transcribe/releases/latest):
+
+| Platform | Binary |
+|----------|--------|
+| Linux x86-64 | `transcribe-linux-x64` |
+| macOS Intel | `transcribe-darwin-x64` |
+| macOS Apple Silicon | `transcribe-darwin-arm64` |
+| Windows x86-64 | `transcribe-windows-x64.exe` |
+
+```bash
+# Linux / macOS example
+chmod +x transcribe-linux-x64
+sudo mv transcribe-linux-x64 /usr/local/bin/transcribe
+transcribe --help
+```
+
+Verify any install method:
+
+```bash
+transcribe --help
 ```
 
 Full install details and troubleshooting: [INSTALLATION.md](INSTALLATION.md)
@@ -123,26 +179,33 @@ Use `.env.example` as reference.
 
 ```text
 .
-|- transcribe              # CLI entrypoint
-|- transcribe_groq.py      # Core transcription + diarization pipeline
-|- install.sh              # Installer for dependencies and shell setup
-|- INSTALLATION.md         # Detailed install and PATH guide
-|- .env.example            # Environment variable template
-|- CHANGELOG.md
-|- RELEASE_CHECKLIST.md
-`- assets/
-   |- hero-banner.svg
-   `- pipeline-diagram.svg
+├── transcribe              # CLI entrypoint (bash wrapper)
+├── transcribe_groq.py      # Core transcription + diarization pipeline
+├── npm/                    # npm package (binary distribution)
+├── Formula/                # Homebrew formula
+├── scripts/                # Debian packaging scripts
+├── install.sh              # Installer for dependencies and shell setup
+├── INSTALLATION.md         # Detailed install and PATH guide
+├── .env.example            # Environment variable template
+├── CHANGELOG.md
+├── RELEASE_CHECKLIST.md
+└── assets/
+    ├── hero-banner.svg
+    └── pipeline-diagram.svg
 ```
 
-## Release notes
+## Release pipeline
 
-Initial release artifacts are prepared:
+Every `v*` tag triggers a fully automated release:
 
-- `.gitignore` for Python, secrets, generated transcripts, and media
-- `LICENSE` (MIT)
-- `CHANGELOG.md`
-- `RELEASE_CHECKLIST.md`
+| Step | What happens |
+|------|-------------|
+| **Binaries** | PyInstaller builds for Linux, macOS (Intel + Apple Silicon), and Windows |
+| **GitHub Release** | All binaries attached automatically |
+| **PyPI** | Wheel + sdist published via OIDC trusted publishing |
+| **APT repo** | `.deb` package rebuilt and pushed to GitHub Pages |
+| **Homebrew** | Formula URL and SHA256 patched and committed automatically |
+| **npm** | Binary-wrapper package published to the npm registry |
 
 ## Installation guide
 
