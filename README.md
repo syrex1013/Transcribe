@@ -1,7 +1,7 @@
-# transcribe-ai
+# transcribe-all
 
 <p align="center">
-  <img src="assets/hero-banner.svg" alt="transcribe-ai banner" width="100%" />
+  <img src="assets/hero-banner.svg" alt="transcribe-all banner" width="100%" />
 </p>
 
 <p align="center">
@@ -39,6 +39,35 @@ Transcribe:
 
 ```bash
 transcribe recording.mp3 en
+```
+
+## Package manager installs
+
+### Homebrew
+
+```bash
+brew tap syrex1013/transcribe-all https://github.com/syrex1013/Transcribe
+brew install transcribe-all
+```
+
+### APT (`apt-get`)
+
+```bash
+echo "deb [trusted=yes] https://hacklabjournal.me/Transcribe/apt ./" | sudo tee /etc/apt/sources.list.d/transcribe-all.list
+sudo apt-get update
+sudo apt-get install -y transcribe-all
+```
+
+### pip
+
+```bash
+pip install transcribe-all
+```
+
+Optional diarization extras:
+
+```bash
+pip install "transcribe-all[diarize]"
 ```
 
 Full install details and troubleshooting: [INSTALLATION.md](INSTALLATION.md)

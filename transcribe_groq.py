@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ╔══════════════════════════════════════════════════════════════╗
-║          TRANSCRIBE-AI  ·  Groq Whisper + pyannote           ║
+║         TRANSCRIBE-ALL  ·  Groq Whisper + pyannote           ║
 ║     Smart splitting · Speaker diarization · Timestamps       ║
 ╚══════════════════════════════════════════════════════════════╝
 Auto-installs missing dependencies on first run.
@@ -430,7 +430,7 @@ BANNER = """[bold cyan]
 
 
 def main():
-    parser = argparse.ArgumentParser(description="transcribe-ai")
+    parser = argparse.ArgumentParser(description="transcribe-all")
     parser.add_argument("file")
     parser.add_argument("language")
     parser.add_argument("--output",    "-o")

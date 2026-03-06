@@ -16,6 +16,11 @@
   - [ ] `git push origin main`
   - [ ] `git push origin --tags`
 - [ ] Create GitHub/GitLab release notes from `CHANGELOG.md`.
+- [ ] Confirm PyPI publish workflow succeeded (`publish-pypi.yml`).
+- [ ] Confirm APT publish workflow succeeded (`publish-apt.yml`).
+- [ ] Confirm GitHub Pages is enabled for the `gh-pages` branch.
+- [ ] Verify APT index endpoint serves `Packages.gz` at `https://<user>.github.io/<repo>/apt/Packages.gz`.
+- [ ] Verify Homebrew tap formula exists at `Formula/transcribe-all.rb`.
 
 ## Post-release
 - [ ] Verify installer docs with live repository URL.

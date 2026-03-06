@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════════════╗
-# ║           TRANSCRIBE-AI  ·  Windows Installer (PowerShell)      ║
+# ║          TRANSCRIBE-ALL  ·  Windows Installer (PowerShell)      ║
 # ╚══════════════════════════════════════════════════════════════════╝
 #Requires -Version 5.1
 Set-StrictMode -Version Latest
@@ -12,7 +12,7 @@ function Write-Fail  { param($msg) Write-Host "  ❌ $msg" -ForegroundColor Red 
 
 Write-Host @"
 
-  TRANSCRIBE-AI  ·  Windows Installer
+  TRANSCRIBE-ALL  ·  Windows Installer
   Powered by Groq Whisper · pyannote.audio · ffmpeg
 
 "@ -ForegroundColor Cyan
@@ -118,7 +118,7 @@ if ($hfKey) {
 }
 
 # ── Install package ───────────────────────────────────────────────────
-Write-Step "Installing transcribe-ai CLI"
+Write-Step "Installing transcribe-all CLI"
 & $python -m pip install --quiet -e $ScriptDir
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "Package install failed."
@@ -134,7 +134,7 @@ Write-Ok "TRANSCRIBE_CONFIG=$ConfigFile (user scope)"
 # ── Done ──────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "══════════════════════════════════════════════" -ForegroundColor Green
-Write-Host "  ✅  transcribe-ai installed successfully!   " -ForegroundColor Green
+Write-Host "  ✅  transcribe-all installed successfully!   " -ForegroundColor Green
 Write-Host "══════════════════════════════════════════════" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Usage:"

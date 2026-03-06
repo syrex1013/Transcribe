@@ -1,6 +1,6 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════════════════════════════╗
-# ║           TRANSCRIBE-AI  ·  Installer                           ║
+# ║          TRANSCRIBE-ALL  ·  Installer                           ║
 # ╚══════════════════════════════════════════════════════════════════╝
 set -e
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config/transcribe"
 CONFIG_FILE="$CONFIG_DIR/config"
 LOCAL_BIN_DIR="$HOME/.local/bin"
-LOCAL_LIB_DIR="$HOME/.local/lib/transcribe-ai"
+LOCAL_LIB_DIR="$HOME/.local/lib/transcribe-all"
 SYSTEM_BIN_DIR="/usr/local/bin"
 SYSTEM_LIB_DIR="/usr/local/lib"
 
@@ -59,6 +59,31 @@ run_sudo_install() {
   fi
 }
 
+install_ffmpeg() {
+  if command -v brew >/dev/null 2>&1; then
+    info "Using Homebrew to install ffmpeg"
+    brew install ffmpeg
+    return 0
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    info "Using apt-get to install ffmpeg"
+    if [ "$(id -u)" -eq 0 ]; then
+      apt-get update
+      apt-get install -y ffmpeg
+    elif command -v sudo >/dev/null 2>&1; then
+      sudo apt-get update
+      sudo apt-get install -y ffmpeg
+    else
+      warn "apt-get detected, but sudo is unavailable."
+      return 1
+    fi
+    return 0
+  fi
+
+  return 1
+}
+
 install_python_deps() {
   local req_file="$SCRIPT_DIR/requirements.txt"
 
@@ -95,19 +120,18 @@ detect_shell_rc() {
 }
 
 banner
-echo -e "${BOLD}Installing transcribe-ai...${RESET}\n"
+echo -e "${BOLD}Installing transcribe-all...${RESET}\n"
 
 # ── ffmpeg ──────────────────────────────────────────────────────────
 step "Checking ffmpeg"
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   ok "ffmpeg found: $(ffmpeg -version 2>&1 | head -1)"
 else
-  warn "ffmpeg/ffprobe not found — attempting install via Homebrew"
-  if command -v brew >/dev/null 2>&1; then
-    brew install ffmpeg
+  warn "ffmpeg/ffprobe not found — attempting install via package manager"
+  if install_ffmpeg; then
     ok "ffmpeg installed"
   else
-    fail "Homebrew not found. Install ffmpeg manually: https://ffmpeg.org/download.html"
+    fail "Could not auto-install ffmpeg. Install manually: https://ffmpeg.org/download.html"
     exit 1
   fi
 fi
@@ -236,14 +260,14 @@ SHELL_RC="$(detect_shell_rc)"
 SOURCE_LINE="[ -f \"$CONFIG_FILE\" ] && source \"$CONFIG_FILE\""
 PATH_LINE='export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"'
 
-if append_if_missing "$SHELL_RC" "transcribe-ai config" "# transcribe-ai config"; then
+if append_if_missing "$SHELL_RC" "transcribe-all config" "# transcribe-all config"; then
   echo "$SOURCE_LINE" >> "$SHELL_RC"
   ok "Added config loader to $SHELL_RC"
 else
   ok "Config loader already in $SHELL_RC"
 fi
 
-if append_if_missing "$SHELL_RC" "transcribe-ai path" "# transcribe-ai path"; then
+if append_if_missing "$SHELL_RC" "transcribe-all path" "# transcribe-all path"; then
   echo "$PATH_LINE" >> "$SHELL_RC"
   ok "Added PATH update to $SHELL_RC"
 else
@@ -253,7 +277,7 @@ fi
 # ── Done ─────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}══════════════════════════════════════════════${RESET}"
-echo -e "${GREEN}${BOLD}  ✅  transcribe-ai installed successfully!   ${RESET}"
+echo -e "${GREEN}${BOLD}  ✅  transcribe-all installed successfully!   ${RESET}"
 echo -e "${GREEN}${BOLD}══════════════════════════════════════════════${RESET}"
 echo ""
 echo -e "  ${BOLD}Install mode:${RESET} $INSTALL_MODE"

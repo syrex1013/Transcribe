@@ -11,7 +11,8 @@ find_groq_script() {
 
   local candidates=(
     "/usr/local/lib/transcribe_groq.py"
-    "$HOME/.local/lib/transcribe-ai/transcribe_groq.py"
+    "/usr/lib/transcribe-all/transcribe_groq.py"
+    "$HOME/.local/lib/transcribe-all/transcribe_groq.py"
     "$SCRIPT_DIR/transcribe_groq.py"
   )
 
@@ -134,7 +135,7 @@ else
     echo "Error: transcribe_groq.py not found."
     echo "Expected one of:"
     echo "  /usr/local/lib/transcribe_groq.py"
-    echo "  $HOME/.local/lib/transcribe-ai/transcribe_groq.py"
+    echo "  $HOME/.local/lib/transcribe-all/transcribe_groq.py"
     echo "Or set TRANSCRIBE_GROQ_SCRIPT to a valid path."
     exit 1
   fi

@@ -6,7 +6,7 @@
 
 Running `./install.sh` performs all setup required for normal usage:
 
-1. Checks and installs `ffmpeg`/`ffprobe` (via Homebrew if missing)
+1. Checks and installs `ffmpeg`/`ffprobe` (via Homebrew or `apt-get` if missing)
 2. Installs Python dependencies from `requirements.txt`
 3. Installs `transcribe` CLI and `transcribe_groq.py` runtime
 4. Adds shell profile entries so the command is available in new terminals
@@ -20,6 +20,21 @@ chmod +x install.sh transcribe
 source ~/.zshrc   # or ~/.bashrc / ~/.profile
 ```
 
+### Homebrew install
+
+```bash
+brew tap syrex1013/transcribe-all https://github.com/syrex1013/Transcribe
+brew install transcribe-all
+```
+
+### APT install (`apt-get`)
+
+```bash
+echo "deb [trusted=yes] https://hacklabjournal.me/Transcribe/apt ./" | sudo tee /etc/apt/sources.list.d/transcribe-all.list
+sudo apt-get update
+sudo apt-get install -y transcribe-all
+```
+
 ### Global path behavior
 
 - Preferred install:
@@ -27,7 +42,7 @@ source ~/.zshrc   # or ~/.bashrc / ~/.profile
   - Runtime: `/usr/local/lib/transcribe_groq.py`
 - Fallback install (no system write access):
   - CLI: `~/.local/bin/transcribe`
-  - Runtime: `~/.local/lib/transcribe-ai/transcribe_groq.py`
+  - Runtime: `~/.local/lib/transcribe-all/transcribe_groq.py`
 
 The installer appends `export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"` to your shell profile.
 
@@ -62,8 +77,13 @@ After install, **open a new terminal** for the `transcribe` command to be availa
 ### Manual install (any platform)
 
 ```bash
-pip install -e .          # installs the transcribe entry-point
-pip install -r requirements.txt   # install all runtime deps
+pip install transcribe-all
+```
+
+For optional speaker diarization dependencies:
+
+```bash
+pip install "transcribe-all[diarize]"
 ```
 
 ---

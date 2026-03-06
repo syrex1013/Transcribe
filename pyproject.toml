@@ -3,11 +3,11 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "transcribe-ai"
-version = "0.2.0"
+name = "transcribe-all"
+version = "0.3.0"
 description = "CLI audio transcription via Groq Whisper with optional speaker diarization"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
 requires-python = ">=3.9"
 dependencies = [
     "requests>=2.31",

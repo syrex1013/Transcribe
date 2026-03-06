@@ -1,7 +1,7 @@
 <svg width="1400" height="360" viewBox="0 0 1400 360" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="1400" height="360" rx="16" fill="#F8FAFC"/>
   <text x="56" y="56" fill="#0F172A" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="28" font-weight="700">
-    transcribe-ai pipeline
+    transcribe-all pipeline
   </text>
 
   <rect x="56" y="100" width="230" height="170" rx="12" fill="#E2E8F0" stroke="#94A3B8"/>

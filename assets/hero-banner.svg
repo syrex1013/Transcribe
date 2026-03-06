@@ -16,7 +16,7 @@
   <rect x="80" y="70" width="1240" height="280" rx="16" fill="#0B1225" fill-opacity="0.65" stroke="#22D3EE" stroke-opacity="0.35"/>
 
   <text x="130" y="170" fill="white" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="64" font-weight="700">
-    transcribe-ai
+    transcribe-all
   </text>
   <text x="130" y="220" fill="#A5B4FC" font-family="ui-sans-serif, -apple-system, Segoe UI, sans-serif" font-size="28">
     Hackathon-ready audio transcription + speaker diarization

@@ -1,0 +1,36 @@
+name: Publish APT Repository
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-apt:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Debian packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+      - name: Build Debian package
+        run: scripts/build_deb.sh
+
+      - name: Build APT repo metadata
+        run: scripts/build_apt_repo.sh dist/deb dist/apt
+
+      - name: Publish to gh-pages (apt/)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: dist/apt
+          destination_dir: apt
+          keep_files: true
