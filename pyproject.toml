@@ -22,6 +22,8 @@ diarize = [
 ]
 dev = [
     "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-timeout>=2.1",
 ]
 
 [project.scripts]
@@ -29,3 +31,38 @@ transcribe = "transcribe_groq:main"
 
 [tool.setuptools]
 py-modules = ["transcribe_groq"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--cov=transcribe_groq",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=30",
+    "--timeout=30",
+]
+markers = [
+    "unit: pure unit tests with no I/O or network",
+    "integration: tests that exercise the filesystem",
+    "slow: tests that take more than 1 second",
+]
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+
+[tool.coverage.run]
+source = ["transcribe_groq"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "def _pip",
+]
