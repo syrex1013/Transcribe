@@ -1,13 +1,13 @@
 Package: transcribe-all
-Version: 0.4.0
+Version: 0.5.0
 Architecture: all
 Maintainer: transcribe-all maintainers <opensource@transcribe-all.dev>
 Depends: bash, ffmpeg, python3, python3-requests, python3-rich
-Filename: ./transcribe-all_0.4.0_all.deb
-Size: 11264
-MD5sum: 4fc69c027b75bc2194f44e521df5b2e7
-SHA1: 549c77c154e617fc81d4790e9bfcd3e49f798085
-SHA256: 2fcb1ebcf9bd735675fef95a55469313d8e81f12d059828125ac2d79110df2f1
+Filename: ./transcribe-all_0.5.0_all.deb
+Size: 11262
+MD5sum: ce15c043810e4e1ad6687fd260a20213
+SHA1: 9e43670b1909dcfef64c7b4fa6a0e0c9173cd951
+SHA256: 5869a548d7f8fd49811313b730ddf7e8bb1145e79eb95b7ad7976e6b324b402e
 Section: utils
 Priority: optional
 Description: CLI audio transcription via Groq Whisper
