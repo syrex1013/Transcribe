@@ -109,7 +109,6 @@ Grab the right binary for your platform from the
 | Platform | Binary |
 |----------|--------|
 | Linux x86-64 | `transcribe-linux-x64` |
-| macOS Intel | `transcribe-darwin-x64` |
 | macOS Apple Silicon | `transcribe-darwin-arm64` |
 | Windows x86-64 | `transcribe-windows-x64.exe` |
 

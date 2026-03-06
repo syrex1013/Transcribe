@@ -52,10 +52,7 @@ jobs:
           - os: ubuntu-22.04
             label: linux-x64
             asset: transcribe-linux-x64
-          - os: macos-13          # Intel runner
-            label: darwin-x64
-            asset: transcribe-darwin-x64
-          - os: macos-latest      # Apple Silicon runner
+          - os: macos-latest      # Apple Silicon (arm64)
             label: darwin-arm64
             asset: transcribe-darwin-arm64
           - os: windows-latest

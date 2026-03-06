@@ -29,28 +29,26 @@ const PLATFORM_MAP = {
 const ARCH_MAP = {
   x64: "x64",
   arm64: "arm64",
-  // Rosetta 2 on Apple Silicon reports x64 when running under translation
 };
+
+// Supported build matrix: linux-x64, darwin-arm64, windows-x64
+const SUPPORTED = new Set(["linux-x64", "darwin-arm64", "windows-x64"]);
 
 function getAssetName() {
   const p = PLATFORM_MAP[process.platform];
   const a = ARCH_MAP[process.arch];
+  const key = `${p || process.platform}-${a || process.arch}`;
 
-  if (!p) {
+  if (!p || !a || !SUPPORTED.has(key)) {
     throw new Error(
-      `Unsupported platform: ${process.platform}. ` +
-        "Install via pip instead: pip install transcribe-all"
-    );
-  }
-  if (!a) {
-    throw new Error(
-      `Unsupported architecture: ${process.arch} on ${process.platform}. ` +
+      `No pre-built binary for ${process.platform}/${process.arch} (${key}). ` +
         "Install via pip instead: pip install transcribe-all"
     );
   }
 
   const ext = process.platform === "win32" ? ".exe" : "";
-  return `transcribe-${p}-${a}${ext}`;
+  const pName = p === "win32" ? "windows" : p;
+  return `transcribe-${pName}-${a}${ext}`;
 }
 
 // ─── HTTP download with redirect following ───────────────────────────────────
